@@ -1,0 +1,24 @@
+server:
+  port: 8081
+
+
+spring:
+  config:
+    import: optional:classpath:application-secret.yml
+  datasource:
+    url: jdbc:mysql://localhost:3306/Talent_link?serverTimezone=Asia/Seoul
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # create, update, validate, none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  thymeleaf:
+    cache: false  # 템플릿 리로드 쉽게 하려면 false
+

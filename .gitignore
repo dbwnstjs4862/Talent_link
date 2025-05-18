@@ -42,3 +42,6 @@ Thumbs.db
 
 # 환경 파일
 .env
+
+# 민감한 정보 따로 관리
+src/main/resources/application-secret.yml
