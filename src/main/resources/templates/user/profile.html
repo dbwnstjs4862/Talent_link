@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>내 정보</title>
+</head>
+<body>
+<h1>👤 내 정보</h1>
+
+<table border="1">
+    <tr>
+        <th>닉네임</th>
+        <td th:text="${user.nickname}">닉네임</td>
+    </tr>
+</table>
+
+<br>
+<a th:href="@{/mypage/profile/edit}">✏️ 내 정보 수정</a>
+<a th:href="@{/mypage}">← 마이페이지</a>
+</body>
+</html>

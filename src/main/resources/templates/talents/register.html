@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>재능 등록</title>
+</head>
+<body>
+<h1>📝 재능 등록</h1>
+
+<form th:action="@{/talents}" method="post">
+    <label>제목: <input type="text" name="title" required /></label><br><br>
+
+    <label>설명:</label><br>
+    <textarea name="description" rows="5" cols="50" required></textarea><br><br>
+
+    <label>가격: <input type="number" name="price" min="0" required /></label><br><br>
+
+    <button type="submit">등록하기</button>
+</form>
+
+<br>
+<a th:href="@{/talents}">재능 목록 보기</a>
+</body>
+</html>

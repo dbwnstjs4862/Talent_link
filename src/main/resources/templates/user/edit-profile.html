@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>내 정보 수정</title>
+</head>
+<body>
+<h1>✏️ 내 정보 수정</h1>
+
+<form method="post" th:action="@{/mypage/profile/edit}">
+  <label>닉네임:
+    <input type="text" name="nickname" th:value="${user.nickname}" required />
+  </label><br><br>
+
+  <button type="submit">수정하기</button>
+</form>
+
+<br>
+<a th:href="@{/mypage/profile}">← 내 정보로 돌아가기</a>
+</body>
+</html>

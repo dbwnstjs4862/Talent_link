@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>내가 올린 재능</title>
+</head>
+<body>
+<h1>📝 내가 등록한 재능 목록</h1>
+
+<table border="1">
+  <thead>
+  <tr>
+    <th>제목</th>
+    <th>설명</th>
+    <th>가격</th>
+    <th>작성일</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="talent : ${talents}">
+    <td>
+      <a th:href="@{'/talents/' + ${talent.id}}" th:text="${talent.title}">제목</a>
+    </td>
+    <td th:text="${talent.description}">설명</td>
+    <td th:text="${talent.price}">가격</td>
+    <td th:text="${#temporals.format(talent.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</td>
+  </tr>
+  </tbody>
+</table>
+
+<br>
+<a th:href="@{/mypage}">← 마이페이지로 돌아가기</a>
+<a th:href="@{/talents/register}">➕ 재능 등록하러 가기</a>
+</body>
+</html>

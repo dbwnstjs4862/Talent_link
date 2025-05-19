@@ -38,5 +38,8 @@ public class User {
     public String getNickname() { return nickname; }
     public UserRole getRole() { return role; }
 
-    // 필요시 setter도 추가 가능
+    public void updateProfile(String nickname) {
+        this.nickname = nickname;
+    }
+
 }

@@ -6,8 +6,9 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    Optional<User> findByUsername(String username);  // 로그인용으로 사용
+    // 사용자명으로 사용자 조회 (로그인 등 인증용)
+    Optional<User> findByUsername(String username);
 
-    boolean existsByUsername(String username);        // 중복확인용
+    // 사용자명 중복 확인 (회원가입 시 사용)
+    boolean existsByUsername(String username);
 }
-
