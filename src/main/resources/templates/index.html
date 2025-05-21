@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>TalentLink - 재능 거래 플랫폼</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    h2 {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 0.5rem;
+    }
+
+    .card-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .card {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ✅ 공통 헤더 삽입 -->
+<div th:replace="common/header :: header"></div>
+
+<main>
+
+  <section>
+    <h2>📝 최신 재능</h2>
+    <div class="card-list">
+      <div class="card" th:each="talent : ${latestTalents}">
+        <h3 th:text="${talent.title}">재능 제목</h3>
+        <p th:text="${talent.description}">설명</p>
+        <p><strong th:text="${talent.price} + '원'">10000원</strong></p>
+        <a th:href="@{'/talents/' + ${talent.id}}">자세히 보기 →</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>📨 최근 요청</h2>
+    <div class="card-list">
+      <div class="card" th:each="request : ${latestRequests}">
+        <h3 th:text="${request.title}">요청 제목</h3>
+        <p>예산: <span th:text="${request.budget}">50000</span>원</p>
+        <p>마감일: <span th:text="${#temporals.format(request.deadline, 'yyyy-MM-dd')}">2025-06-01</span></p>
+        <a th:href="@{'/talentrequests/' + ${request.id}}">요청 보기 →</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ✅ 공통 푸터 삽입 -->
+<div th:replace="common/footer :: footer"></div>
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+<div th:fragment="header">
+    <header style="background-color: #333; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <div><strong>TalentLink</strong></div>
+        <nav>
+            <a th:href="@{/talents}" style="color: white; margin-left: 1rem;">재능 보기</a>
+            <a th:href="@{/talentrequests}" style="color: white; margin-left: 1rem;">요청 보기</a>
+            <a th:href="@{/talents/register}" style="color: white; margin-left: 1rem;">재능 등록</a>
+            <a th:href="@{/talentrequests/register}" style="color: white; margin-left: 1rem;">요청 등록</a>
+
+            <!-- 로그인 상태일 때 -->
+            <span th:if="${#authentication?.principal != 'anonymousUser'}">
+                <a th:href="@{/mypage/profile}" style="color: white; margin-left: 1rem;">
+                    <span th:if="${#authentication.principal instanceof T(com.talentlink.talentlink.security.CustomUserDetails)}"
+                          th:text="${#authentication.principal.nickname}">내 정보</span>
+                    <span th:unless="${#authentication.principal instanceof T(com.talentlink.talentlink.security.CustomUserDetails)}"
+                          th:text="${#authentication.name}">사용자</span>
+                </a>
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" style="color: white; background: none; border: none; margin-left: 1rem; cursor: pointer;">로그아웃</button>
+                </form>
+            </span>
+
+                        <!-- 로그인 X -->
+                        <span th:if="${#authentication?.principal == 'anonymousUser'}">
+                <a th:href="@{/login}" style="color: white; margin-left: 1rem;">로그인</a>
+                <a th:href="@{/register}" style="color: white; margin-left: 1rem;">회원가입</a>
+            </span>
+        </nav>
+    </header>
+</div>

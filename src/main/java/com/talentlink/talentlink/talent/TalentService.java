@@ -4,6 +4,7 @@ import com.talentlink.talentlink.talent.dto.TalentRequest;
 import com.talentlink.talentlink.talent.dto.TalentResponse;
 import com.talentlink.talentlink.user.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,5 +52,18 @@ public class TalentService {
                 .map(TalentResponse::new)
                 .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public List<TalentResponse> findLatestTalents(int limit) {
+        return talentRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, limit)).stream()
+                .map(TalentResponse::new)
+                .collect(Collectors.toList());
+    }
+
+//    public List<TalentResponse> findLatestTalents(int limit) {
+//        List<Talent> talents = talentRepository.findTopByOrderByCreatedAtDesc(PageRequest.of(0, limit));
+//        System.out.println("🔍 최신 재능 개수: " + talents.size()); // 👈 여기에 로그
+//        return talents.stream().map(TalentResponse::new).collect(Collectors.toList());
+//    }
 
 }

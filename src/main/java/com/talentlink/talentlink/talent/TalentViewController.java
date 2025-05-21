@@ -17,38 +17,26 @@ public class TalentViewController {
 
     private final TalentService talentService;
 
-    // 재능 등록 폼 페이지
-    @GetMapping("/talents/register")
-    public String showRegisterForm() {
-        return "talents/register"; // templates/talents/register.html
-    }
-
-    // 재능 등록 처리
-    @PostMapping("/talents")
-    public String registerTalentForm(
-            @ModelAttribute TalentRequest request,
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        talentService.registerTalent(request, userDetails.getUser());
-        return "redirect:/talents"; // 등록 후 전체 목록으로 이동
-    }
-
-    // 전체 재능 목록
     @GetMapping("/talents")
     public String showAllTalents(Model model) {
-        List<TalentResponse> talents = talentService.findAllTalents();
-        model.addAttribute("talents", talents);
-        return "talents/list"; // templates/talents/list.html
+        model.addAttribute("talents", talentService.findAllTalents());
+        return "talents/list";
     }
 
-    // 재능 상세 보기
+    @GetMapping("/talents/register")
+    public String showRegisterForm() {
+        return "talents/register";
+    }
+
+    @PostMapping("/talents")
+    public String registerTalentForm(@ModelAttribute TalentRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        talentService.registerTalent(request, userDetails.getUser());
+        return "redirect:/talents";
+    }
+
     @GetMapping("/talents/{id}")
-    public String showTalentDetail(
-            @PathVariable Long id,
-            Model model
-    ) {
-        TalentResponse talent = talentService.findById(id);
-        model.addAttribute("talent", talent);
-        return "talents/detail"; // templates/talents/detail.html
+    public String showTalentDetail(@PathVariable Long id, Model model) {
+        model.addAttribute("talent", talentService.findById(id));
+        return "talents/detail";
     }
 }

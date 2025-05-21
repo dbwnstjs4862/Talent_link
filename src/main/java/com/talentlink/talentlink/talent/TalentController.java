@@ -19,31 +19,19 @@ public class TalentController {
     private final TalentService talentService;
 
     @PostMapping
-    public ResponseEntity<String> registerTalent(
-            @RequestBody TalentRequest request,
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        User loginUser = userDetails.getUser();
-        Long talentId = talentService.registerTalent(request, loginUser);
-        return ResponseEntity.ok("재능 등록 성공! ID: " + talentId);
+    public ResponseEntity<String> registerTalent(@RequestBody TalentRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long id = talentService.registerTalent(request, userDetails.getUser());
+        return ResponseEntity.ok("재능 등록 성공! ID: " + id);
     }
 
     @GetMapping("/my")
-    public ResponseEntity<List<TalentResponse>> getMyTalents(
-            @AuthenticationPrincipal CustomUserDetails userDetails
-    ) {
-        User loginUser = userDetails.getUser();
-        List<TalentResponse> myTalents = talentService.findMyTalents(loginUser);
-        return ResponseEntity.ok(myTalents);
+    public ResponseEntity<List<TalentResponse>> getMyTalents(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(talentService.findMyTalents(userDetails.getUser()));
     }
 
-    // ✅ API용 재능 상세 조회 추가됨
     @GetMapping("/{id}")
-    public ResponseEntity<TalentResponse> getTalentDetail(
-            @PathVariable Long id
-    ) {
-        TalentResponse talent = talentService.findById(id);
-        return ResponseEntity.ok(talent);
+    public ResponseEntity<TalentResponse> getTalentDetail(@PathVariable Long id) {
+        return ResponseEntity.ok(talentService.findById(id));
     }
 }
 

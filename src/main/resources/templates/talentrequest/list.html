@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>전체 요청 목록 - TalentLink</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 3rem auto;
+      padding: 1rem;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    thead {
+      background-color: #333;
+      color: white;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    tbody tr:hover {
+      background-color: #f3f3f3;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+    }
+
+    .button-link {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #333;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    .button-link:hover {
+      background-color: #444;
+    }
+  </style>
+</head>
+<body>
+
+<div th:replace="common/header :: header"></div>
+
+<main>
+  <h2>🌍 전체 구매 요청 목록</h2>
+
+  <table>
+    <thead>
+    <tr>
+      <th>제목</th>
+      <th>요청자</th>
+      <th>예산</th>
+      <th>마감일</th>
+      <th>작성일</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="request : ${requests}">
+      <td>
+        <a th:href="@{'/talentrequests/' + ${request.id}}" th:text="${request.title}">제목</a>
+      </td>
+      <td th:text="${request.nickname}">요청자</td>
+      <td th:text="${request.budget} + '원'">예산</td>
+      <td th:text="${#temporals.format(request.deadline, 'yyyy-MM-dd HH:mm')}">마감일</td>
+      <td th:text="${#temporals.format(request.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <div class="buttons">
+    <a class="button-link" th:href="@{/talentrequests/register}">➕ 요청 등록하기</a>
+    <a class="button-link" th:href="@{/mypage/talentrequests}">👤 내 요청 보기</a>
+  </div>
+</main>
+
+<div th:replace="common/footer :: footer"></div>
+
+</body>
+</html>

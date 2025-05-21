@@ -2,20 +2,83 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>내 정보 수정</title>
+  <title>내 정보 수정 - TalentLink</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+    }
+
+    main {
+      max-width: 600px;
+      margin: 3rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .btn-box {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    button, a.button {
+      padding: 10px 20px;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    button:hover,
+    a.button:hover {
+      background-color: #444;
+    }
+  </style>
 </head>
 <body>
-<h1>✏️ 내 정보 수정</h1>
 
-<form method="post" th:action="@{/mypage/profile/edit}">
-  <label>닉네임:
-    <input type="text" name="nickname" th:value="${user.nickname}" required />
-  </label><br><br>
+<!-- ✅ 공통 헤더 -->
+<div th:replace="common/header :: header"></div>
 
-  <button type="submit">수정하기</button>
-</form>
+<main>
+  <h2>✏️ 내 정보 수정</h2>
 
-<br>
-<a th:href="@{/mypage/profile}">← 내 정보로 돌아가기</a>
+  <form th:action="@{/mypage/profile/edit}" method="post">
+    <input type="text" name="nickname" th:value="${user.nickname}" placeholder="닉네임" required>
+
+    <div class="btn-box">
+      <button type="submit">저장하기</button>
+      <a th:href="@{/mypage/profile}" class="button">취소</a>
+    </div>
+  </form>
+</main>
+
+<!-- ✅ 공통 푸터 -->
+<div th:replace="common/footer :: footer"></div>
+
 </body>
 </html>

@@ -1,24 +1,105 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>재능 등록</title>
+    <title>재능 등록 - TalentLink</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+
+        input, textarea {
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        button {
+            padding: 12px;
+            background-color: #333;
+            color: white;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #444;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            text-decoration: none;
+            color: #007acc;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-<h1>📝 재능 등록</h1>
 
-<form th:action="@{/talents}" method="post">
-    <label>제목: <input type="text" name="title" required /></label><br><br>
+<div th:replace="common/header :: header"></div>
 
-    <label>설명:</label><br>
-    <textarea name="description" rows="5" cols="50" required></textarea><br><br>
+<main>
+    <h2>📝 재능 등록</h2>
 
-    <label>가격: <input type="number" name="price" min="0" required /></label><br><br>
+    <form th:action="@{/talents}" method="post">
+        <div>
+            <label for="title">제목</label>
+            <input type="text" id="title" name="title" required>
+        </div>
 
-    <button type="submit">등록하기</button>
-</form>
+        <div>
+            <label for="description">설명</label>
+            <textarea id="description" name="description" rows="5" required></textarea>
+        </div>
 
-<br>
-<a th:href="@{/talents}">재능 목록 보기</a>
+        <div>
+            <label for="price">가격 (₩)</label>
+            <input type="number" id="price" name="price" min="0" required>
+        </div>
+
+        <button type="submit">등록하기</button>
+    </form>
+
+    <a class="back-link" th:href="@{/talents}">← 재능 목록 보기</a>
+</main>
+
+<div th:replace="common/footer :: footer"></div>
+
 </body>
 </html>

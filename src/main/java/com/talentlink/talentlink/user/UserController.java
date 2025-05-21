@@ -18,8 +18,8 @@ public class UserController {
 
     // 회원가입 - form 방식이므로 @RequestBody 제거
     @PostMapping
-    public ResponseEntity<UserResponse> register(UserRequest request) {
-        UserResponse response = userService.register(request);
+    public ResponseEntity<UserResponse> register(@RequestBody UserRequest request) {
+        UserResponse response = userService.registerWithoutAutoLogin(request);
         return ResponseEntity.ok(response);
     }
 }

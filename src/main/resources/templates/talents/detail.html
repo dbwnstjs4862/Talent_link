@@ -1,31 +1,84 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>재능 상세</title>
+    <title>재능 상세 - TalentLink</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+        }
+
+        main {
+            max-width: 700px;
+            margin: 3rem auto;
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .meta {
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            margin-top: 2rem;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .price {
+            font-size: 1.2rem;
+            margin-top: 1.5rem;
+            font-weight: bold;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            text-decoration: none;
+            color: #007acc;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-<h1 th:text="${talent.title}">제목</h1>
 
-<p>
-    <strong>작성자:</strong>
-    <span th:text="${talent.nickname}">닉네임</span>
-</p>
+<div th:replace="common/header :: header"></div>
 
-<p>
-    <strong>작성일:</strong>
-    <span th:text="${#temporals.format(talent.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span>
-</p>
+<main>
+    <h2 th:text="${talent.title}">재능 제목</h2>
 
-<p><strong>설명:</strong></p>
-<p th:text="${talent.description}">설명</p>
+    <div class="meta">
+        👤 <span th:text="${talent.nickname}">작성자</span> |
+        🗓️ <span th:text="${#temporals.format(talent.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span>
+    </div>
 
-<p>
-    <strong>가격:</strong>
-    <span th:text="${talent.price}">가격</span> 원
-</p>
+    <div>
+        <div class="section-title">📄 설명</div>
+        <p th:text="${talent.description}">설명 내용</p>
+    </div>
 
-<br>
-<a th:href="@{/talents}">← 목록으로 돌아가기</a>
+    <div class="price">
+        💰 가격: <span th:text="${talent.price}">가격</span> 원
+    </div>
+
+    <a class="back-link" th:href="@{/talents}">← 목록으로 돌아가기</a>
+</main>
+
+<div th:replace="common/footer :: footer"></div>
+
 </body>
 </html>
