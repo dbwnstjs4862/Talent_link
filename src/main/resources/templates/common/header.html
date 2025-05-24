@@ -2,6 +2,7 @@
     <header style="background-color: #333; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;">
         <div><strong>TalentLink</strong></div>
         <nav>
+            <a th:href="@{/chat/rooms}" style="color: white; margin-left: 1rem;">채팅</a>
             <a th:href="@{/talents}" style="color: white; margin-left: 1rem;">재능 보기</a>
             <a th:href="@{/talentrequests}" style="color: white; margin-left: 1rem;">요청 보기</a>
             <a th:href="@{/talents/register}" style="color: white; margin-left: 1rem;">재능 등록</a>
@@ -21,8 +22,8 @@
                 </form>
             </span>
 
-                        <!-- 로그인 X -->
-                        <span th:if="${#authentication?.principal == 'anonymousUser'}">
+            <!-- 로그인 X -->
+            <span th:if="${#authentication?.principal == 'anonymousUser'}">
                 <a th:href="@{/login}" style="color: white; margin-left: 1rem;">로그인</a>
                 <a th:href="@{/register}" style="color: white; margin-left: 1rem;">회원가입</a>
             </span>

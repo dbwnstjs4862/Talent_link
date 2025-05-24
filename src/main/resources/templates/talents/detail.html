@@ -62,9 +62,14 @@
     <h2 th:text="${talent.title}">재능 제목</h2>
 
     <div class="meta">
-        👤 <span th:text="${talent.nickname}">작성자</span> |
+        👤
+        <a th:href="@{'/users/' + ${talent.userId}}"
+           style="text-decoration: none; color: inherit;"
+           th:text="${talent.nickname}">작성자</a>
+        |
         🗓️ <span th:text="${#temporals.format(talent.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span>
     </div>
+
 
     <div>
         <div class="section-title">📄 설명</div>

@@ -10,7 +10,8 @@ public class TalentResponse {
     private String title;
     private String description;
     private int price;
-    private String nickname;       // 등록한 유저 닉네임
+    private String nickname;    // 등록한 유저 닉네임
+    private Long userId;
     private LocalDateTime createdAt; // ✅ 작성일 추가
 
     public TalentResponse(Talent talent) {
@@ -19,6 +20,7 @@ public class TalentResponse {
         this.description = talent.getDescription();
         this.price = talent.getPrice();
         this.nickname = talent.getUser().getNickname();
+        this.userId = talent.getUser().getId();
         this.createdAt = talent.getCreatedAt(); // ✅ 작성일 세팅
     }
 
@@ -27,5 +29,6 @@ public class TalentResponse {
     public String getDescription() { return description; }
     public int getPrice() { return price; }
     public String getNickname() { return nickname; }
+    public Long getUserId() { return userId; }
     public LocalDateTime getCreatedAt() { return createdAt; } // ✅ Getter 추가
 }

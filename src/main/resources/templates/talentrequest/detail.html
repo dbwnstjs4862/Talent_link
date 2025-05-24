@@ -65,10 +65,14 @@
   <h2 th:text="${request.title}">요청 제목</h2>
 
   <div class="meta">
-    👤 <span th:text="${request.nickname}">요청자</span> |
+    👤
+    <a th:href="@{'/users/' + ${request.userId}}"
+       style="text-decoration: none; color: inherit;"
+       th:text="${request.nickname}">요청자</a> |
     🗓️ <span th:text="${#temporals.format(request.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span> |
     ⏰ 마감일: <span th:text="${#temporals.format(request.deadline, 'yyyy-MM-dd HH:mm')}">마감일</span>
   </div>
+
 
   <div class="section">
     <div class="section-title">📄 요청 내용</div>

@@ -11,6 +11,7 @@ public class TalentRequestResponse {
     private int budget;
     private LocalDateTime deadline;
     private String nickname;
+    private Long userId; // ✅ 추가
     private LocalDateTime createdAt;
 
     public TalentRequestResponse(TalentRequest request) {
@@ -21,6 +22,7 @@ public class TalentRequestResponse {
         this.deadline = request.getDeadline();
         this.createdAt = request.getCreatedAt();
         this.nickname = request.getRequester().getNickname();
+        this.userId = request.getRequester().getId(); // ✅ 추가
     }
 
     public Long getId() { return id; }
@@ -29,6 +31,6 @@ public class TalentRequestResponse {
     public int getBudget() { return budget; }
     public LocalDateTime getDeadline() { return deadline; }
     public String getNickname() { return nickname; }
+    public Long getUserId() { return userId; } // ✅ 추가
     public LocalDateTime getCreatedAt() { return createdAt; }
 }
-

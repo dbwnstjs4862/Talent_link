@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>채팅방 목록</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    main {
+      max-width: 600px;
+      margin: 2rem auto;
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .room {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      transition: background 0.2s;
+      position: relative;
+    }
+
+    .room:hover {
+      background-color: #f0f0f0;
+      cursor: pointer;
+    }
+
+    .room a {
+      text-decoration: none;
+      color: #333;
+      display: block;
+    }
+
+    .meta {
+      font-size: 0.85rem;
+      color: #777;
+      margin-top: 0.4rem;
+    }
+
+    .last-message {
+      font-size: 0.95rem;
+      color: #555;
+      margin-top: 0.4rem;
+    }
+
+    .badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background-color: red;
+      color: white;
+      border-radius: 50%;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ✅ 공통 헤더 -->
+<div th:replace="common/header :: header"></div>
+
+<main>
+  <h2>💬 채팅방 목록</h2>
+
+  <div th:if="${#lists.isEmpty(rooms)}">
+    참여 중인 채팅방이 없습니다.
+  </div>
+
+  <div th:each="room : ${rooms}" class="room">
+    <a th:href="@{'/chat/room/' + ${room.roomId}}">
+      <strong th:text="${room.partnerNickname}">상대방 닉네임</strong>
+      <div class="last-message" th:text="${room.lastMessage}">마지막 메시지 내용</div>
+      <div class="meta" th:text="${#temporals.format(room.lastMessageTime, 'yyyy-MM-dd HH:mm')}">마지막 시간</div>
+      <span th:if="${room.unreadCount > 0}" class="badge" th:text="${room.unreadCount}">1</span>
+    </a>
+  </div>
+</main>
+
+</body>
+</html>
