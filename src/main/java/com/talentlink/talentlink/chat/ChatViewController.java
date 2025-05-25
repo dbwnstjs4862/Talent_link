@@ -28,6 +28,7 @@ public class ChatViewController {
         User me = userDetails.getUser();
         List<ChatRoomResponse> responses = chatRoomService.getChatRoomsWithDetails(me);
         model.addAttribute("rooms", responses);
+        model.addAttribute("currentUserId", me.getId()); // ✅ 추가해줘야 JS에서 userId 동작함
         return "chat/chat-room-list";
     }
 

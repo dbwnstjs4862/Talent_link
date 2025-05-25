@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>채팅방 목록</title>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -79,15 +81,88 @@
     참여 중인 채팅방이 없습니다.
   </div>
 
-  <div th:each="room : ${rooms}" class="room">
+  <div th:each="room : ${rooms}" class="room" th:attr="data-room-id=${room.roomId}">
     <a th:href="@{'/chat/room/' + ${room.roomId}}">
       <strong th:text="${room.partnerNickname}">상대방 닉네임</strong>
-      <div class="last-message" th:text="${room.lastMessage}">마지막 메시지 내용</div>
-      <div class="meta" th:text="${#temporals.format(room.lastMessageTime, 'yyyy-MM-dd HH:mm')}">마지막 시간</div>
-      <span th:if="${room.unreadCount > 0}" class="badge" th:text="${room.unreadCount}">1</span>
+      <div class="last-message" th:text="${room.lastMessage}" th:id="${'last-msg-' + room.roomId}">마지막 메시지 내용</div>
+      <div class="meta" th:text="${#temporals.format(room.lastMessageTime, 'yyyy-MM-dd HH:mm')}" th:id="${'last-time-' + room.roomId}">마지막 시간</div>
+      <span th:if="${room.unreadCount > 0}" class="badge" th:id="${'unread-' + room.roomId}" th:text="${room.unreadCount}">1</span>
     </a>
   </div>
 </main>
+
+<script th:inline="javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+
+    const userId = [[${currentUserId}]];
+    console.log("✅ userId:", userId);  // ← ✅ 이 라인 추가
+
+    let stompClient;
+
+    function connectWebSocket() {
+      const socket = new SockJS('/ws-chat');
+      stompClient = Stomp.over(socket);
+
+      stompClient.connect({}, function () {
+        console.log("✅ stompClient connected!");  // ✅ 여기에 넣기
+        console.log("🧠 Subscribing to:", `/sub/chat/refresh/${userId}`);
+
+        stompClient.subscribe(`/sub/chat/refresh/${userId}`, function (msg) {
+          const data = JSON.parse(msg.body);
+
+          // ✅ 1단계: 수신 원본
+
+          console.log("[WS 수신 원본]:", msg.body);
+          // ✅ 2단계: 파싱 후 객체 상태 확인
+
+          console.log("[파싱 결과]:", data);
+          // ✅ 3단계: 실제 DOM 접근 테스트
+
+          console.log("[타겟 DOM 존재 여부]:", document.getElementById("last-msg-" + data.roomId));
+
+          const roomId = data.roomId;
+
+          const msgEl = document.getElementById('last-msg-' + roomId);
+          const timeEl = document.getElementById('last-time-' + roomId);
+          const unreadEl = document.getElementById('unread-' + roomId);
+
+          if (msgEl) msgEl.textContent = data.lastMessage || '';
+          if (timeEl && data.lastMessageTime) {
+            const time = new Date(data.lastMessageTime).toLocaleString();
+            timeEl.textContent = time;
+          }
+
+          if (!unreadEl) {
+            if (data.unreadCount > 0) {
+              const newBadge = document.createElement("span");
+              newBadge.id = "unread-" + roomId;
+              newBadge.className = "badge";
+              newBadge.textContent = data.unreadCount;
+
+              // 💡 .room > a 요소 내부에 badge 삽입
+              const roomEl = document.querySelector(`.room[data-room-id='${roomId}'] a`);
+              if (roomEl) {
+                roomEl.appendChild(newBadge);
+              }
+            }
+          } else {
+            if (data.unreadCount > 0) {
+              unreadEl.textContent = data.unreadCount;
+              unreadEl.style.display = "inline-block";
+            } else {
+              unreadEl.style.display = "none";
+            }
+          }
+
+          console.log(`[WS][갱신] roomId=${roomId} → ${data.lastMessage}`);
+        });
+      });
+    }
+
+    connectWebSocket();
+  });
+</script>
+
 
 </body>
 </html>

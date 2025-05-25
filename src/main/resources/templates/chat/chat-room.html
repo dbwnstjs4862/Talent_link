@@ -8,12 +8,13 @@
     <style>
         body { font-family: sans-serif; background: #f2f2f2; }
         .chat-container {
-          width: 600px; margin: 3rem auto; padding: 1rem;
-          background: white; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            width: 600px; margin: 3rem auto; padding: 1rem;
+            background: white; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
         .messages { height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; }
         .message { margin-bottom: 0.8rem; }
         .message.you { text-align: right; color: blue; }
+        .read-status { font-size: 0.75rem; color: #999; margin-left: 4px; }
         input, button { width: 100%; padding: 0.7rem; font-size: 1rem; }
         button { background: #333; color: white; border: none; margin-top: 0.5rem; }
         button:hover { background: #444; }
@@ -21,13 +22,12 @@
 </head>
 <body>
 
-<!-- ✅ 공통 헤더 삽입 -->
+<!-- ✅ 공통 헤더 -->
 <div th:replace="common/header :: header"></div>
 
 <div class="chat-container">
     <h2>💬 채팅방</h2>
     <div id="messages" class="messages"></div>
-
     <input type="text" id="chatInput" placeholder="메시지를 입력하세요..."/>
     <button onclick="sendMessage()">전송</button>
 </div>
@@ -39,105 +39,179 @@
     const otherUserId = [[${otherUserId}]];
 
     let stompClient;
+    const pendingReadIds = new Set();
 
     function loadPreviousMessages() {
-    fetch(`/api/chat/messages/${roomId}`)
-        .then(response => response.json())
-        .then(messages => {
-            const messageBox = document.getElementById("messages");
-            messageBox.innerHTML = ""; // 기존 메시지 클리어 (선택)
+        fetch(`/api/chat/messages/${roomId}`)
+            .then(response => response.json())
+            .then(messages => {
+                const messageBox = document.getElementById("messages");
+                messageBox.innerHTML = "";
 
-            messages.forEach(msg => {
-                const div = document.createElement('div');
-                div.classList.add('message');
+                messages.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.classList.add('message');
+                    div.dataset.messageId = msg.id;
 
-                const isMine = msg.senderId == senderId;
-                if (isMine) div.classList.add('you');
+                    const isMine = msg.senderId == senderId;
+                    if (isMine) div.classList.add('you');
 
-                let messageHtml = `${msg.senderNickname}: ${msg.content}`;
-
-                // 읽음 여부 추가
-                if (isMine) {
-                    if (msg.read && msg.senderId == senderId) {
-                        messageHtml += " ✔ 읽음";
-                    } else {
-                        messageHtml += " 1";
+                    let html = `${msg.senderNickname}: ${msg.content}`;
+                    if (isMine) {
+                        const readMark = (msg.read || pendingReadIds.has(String(msg.id))) ? '✔ 읽음' : '1';
+                        html += `<span class="read-status">${readMark}</span>`;
+                        pendingReadIds.delete(String(msg.id));
                     }
-                }
 
-                div.innerHTML = messageHtml;
-                messageBox.appendChild(div);
+                    div.innerHTML = html;
+                    messageBox.appendChild(div);
+                });
+
+                messageBox.scrollTop = messageBox.scrollHeight;
+
+                // ✅ 메시지 불러온 후, 읽힌 메시지 ID 조회해서 UI 반영
+                fetch(`/api/chat/read-messages/${roomId}?userId=${senderId}`)
+                    .then(res => res.json())
+                    .then(readIds => {
+                        console.log("🧾 서버에서 읽은 메시지 ID 목록 수신:", readIds);
+                        markMessagesAsReadUI(readIds);
+                    });
             });
-
-            messageBox.scrollTop = messageBox.scrollHeight;
-        });
     }
 
+
     function connect() {
-      const socket = new SockJS('/ws-chat');
-      stompClient = Stomp.over(socket);
-      stompClient.connect({}, function () {
-        // 메시지 수신
-        stompClient.subscribe(`/sub/chat/room/${roomId}`, function (message) {
-          const msg = JSON.parse(message.body);
-          const div = document.createElement('div');
-          div.classList.add('message');
-          if (msg.senderId === senderId) div.classList.add('you');
-          div.textContent = `${msg.senderNickname}: ${msg.content}`;
-          if (msg.read && msg.senderId === senderId) {
-            div.textContent += " ✔ 읽음";
-          }
-          document.getElementById("messages").appendChild(div);
-          document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
-        });
+        const socket = new SockJS('/ws-chat');
+        stompClient = Stomp.over(socket);
 
-        // 읽음 알림 수신
-        stompClient.subscribe(`/sub/chat/read/${senderId}`, function (msg) {
-          markMessagesAsReadUI(msg.body);
-        });
+        stompClient.connect({}, function () {
+            stompClient.subscribe(`/sub/chat/room/${roomId}`, function (message) {
+                const msg = JSON.parse(message.body);
+                console.log("📩 WebSocket 수신 메시지:", msg);
 
-        // 입장 시 읽음 처리 발행
-        sendReadSignal();
-      });
+                // 🧠 상대방 메시지면 읽음 신호 바로 보냄
+                if (msg.senderId !== senderId) {
+                    sendReadSignal();
+                }
+
+                if (msg.senderId === senderId && msg.read) {
+                    pendingReadIds.add(String(msg.id));
+                    console.log("📝 읽음 메시지 ID 캐싱:", msg.id);
+                }
+
+                const div = document.createElement('div');
+                div.classList.add('message');
+                div.dataset.messageId = msg.id;
+                const isMine = msg.senderId === senderId;
+                if (isMine) div.classList.add('you');
+
+                let html = `${msg.senderNickname}: ${msg.content}`;
+                if (isMine) {
+                    const readMark = (msg.read || pendingReadIds.has(String(msg.id))) ? '✔ 읽음' : '1';
+                    html += `<span class="read-status">${readMark}</span>`;
+                    pendingReadIds.delete(String(msg.id));
+                }
+
+                div.innerHTML = html;
+                document.getElementById("messages").appendChild(div);
+                document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+            });
+
+            stompClient.subscribe(`/sub/chat/read/${senderId}`, function (msg) {
+                const messageIds = JSON.parse(msg.body);
+                console.log("📨 읽음 표시 대상 메시지 IDs:", messageIds);
+                messageIds.forEach(id => pendingReadIds.add(String(id)));
+
+                setTimeout(() => {
+                    markMessagesAsReadUI(messageIds);
+                }, 600);
+            });
+
+            setTimeout(() => {
+                console.log("📤 WebSocket 연결 후 sendReadSignal 실행");
+                sendReadSignal();
+            }, 800);
+        });
     }
 
     function sendMessage() {
-      const content = document.getElementById("chatInput").value;
-      if (!content.trim()) return;
-      const msg = {
-        roomId: roomId,
-        senderId: senderId,
-        receiverId: otherUserId,
-        senderNickname: senderNickname,
-        content: content,
-        type: 'TALK'
-      };
-      stompClient.send("/pub/chat/message", {}, JSON.stringify(msg));
-      document.getElementById("chatInput").value = "";
+        const content = document.getElementById("chatInput").value;
+        if (!content.trim()) return;
+
+        const msg = {
+            roomId: roomId,
+            senderId: senderId,
+            receiverId: otherUserId,
+            senderNickname: senderNickname,
+            content: content,
+            type: 'TALK'
+        };
+        stompClient.send("/pub/chat/message", {}, JSON.stringify(msg));
+        document.getElementById("chatInput").value = "";
     }
 
     function sendReadSignal() {
-      stompClient.send("/pub/chat/read", {}, JSON.stringify({
-        roomId: roomId,
-        senderId: otherUserId,
-        receiverId: senderId,
-        type: "READ"
-      }));
+        console.log("📤 sendReadSignal(): sender=", otherUserId, ", receiver=", senderId);
+        stompClient.send("/pub/chat/read", {}, JSON.stringify({
+            roomId: roomId,
+            senderId: otherUserId,
+            receiverId: senderId,
+            type: "READ"
+        }));
     }
 
-    function markMessagesAsReadUI(roomIdFromMsg) {
-      const myMessages = document.querySelectorAll('.message.you');
-      myMessages.forEach(msgDiv => {
-        if (!msgDiv.textContent.includes("✔ 읽음")) {
-          msgDiv.textContent += " ✔ 읽음";
-        }
-      });
+    function markMessagesAsReadUI(messageIds) {
+        let tries = 0;
+        const maxTries = 10;
+        const retryDelay = 300;
+
+        const tryMark = () => {
+            let updatedAll = true;
+
+            messageIds.forEach(id => {
+                const msgDiv = document.querySelector(`[data-message-id='${id}']`);
+                if (!msgDiv) {
+                    console.warn(`[시도 ${tries}] 메시지 ${id} 아직 DOM에 없음`);
+                    updatedAll = false;
+                    return;
+                }
+
+                if (msgDiv.innerHTML.includes("✔ 읽음")) {
+                    console.log(`[이미 처리됨] ${id}`);
+                    return;
+                }
+
+                let statusEl = msgDiv.querySelector(".read-status");
+                if (statusEl) {
+                    statusEl.textContent = "✔ 읽음";
+                    console.log(`[수정 완료] ${id}`);
+                } else {
+                    statusEl = document.createElement("span");
+                    statusEl.className = "read-status";
+                    statusEl.textContent = "✔ 읽음";
+                    msgDiv.appendChild(statusEl);
+                    console.log(`[추가 완료] ${id}`);
+                }
+            });
+
+            if (!updatedAll && tries < maxTries) {
+                tries++;
+                setTimeout(tryMark, retryDelay);
+            } else if (!updatedAll) {
+                console.error(`❌ ${maxTries}회 시도 후에도 일부 메시지가 DOM에 없음`);
+            } else {
+                console.log(`✅ 모든 메시지 읽음 UI 처리 완료`);
+            }
+        };
+
+        tryMark();
     }
 
-    // ✅ 페이지 로딩 시 실행
+
     loadPreviousMessages();
     connect();
 </script>
+
 
 </body>
 </html>

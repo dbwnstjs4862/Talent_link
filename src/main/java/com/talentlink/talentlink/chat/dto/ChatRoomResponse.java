@@ -20,12 +20,10 @@ public class ChatRoomResponse {
     private LocalDateTime lastMessageTime;
     private int unreadCount;
 
-    public static ChatRoomResponse from(ChatRoom room, User me, ChatMessage lastMessage, int unreadCount) {
-        User partner = room.getPartner(me);
-
+    public static ChatRoomResponse from(ChatRoom room, String partnerNickname, ChatMessage lastMessage, int unreadCount) {
         return ChatRoomResponse.builder()
                 .roomId(room.getId())
-                .partnerNickname(partner.getNickname())
+                .partnerNickname(partnerNickname)
                 .createdAt(room.getCreatedAt())
                 .lastMessage(lastMessage != null ? lastMessage.getContent() : "")
                 .lastMessageTime(lastMessage != null ? lastMessage.getSentAt() : null)

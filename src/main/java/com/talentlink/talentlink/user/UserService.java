@@ -100,8 +100,13 @@ public class UserService {
         return new UserResponse(user);
     }
 
+    @Transactional(readOnly = true)
     public User findById(Long id) {
         return userRepository.findById(id)
+                .map(user -> {
+                    user.getNickname(); // ✅ 여기서 프록시 강제 초기화
+                    return user;
+                })
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
 }

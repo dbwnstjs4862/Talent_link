@@ -3,6 +3,7 @@ package com.talentlink.talentlink.chat;
 import com.talentlink.talentlink.chat.dto.ChatRoomResponse;
 import com.talentlink.talentlink.user.User;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,8 +20,9 @@ public class ChatRoomService {
         return chatRoomRepository.save(new ChatRoom(userA, userB));
     }
 
+    // ChatRoomService.java
     public ChatRoom findById(Long id) {
-        return chatRoomRepository.findById(id)
+        return chatRoomRepository.findWithUsersById(id) // ✅ 여기!!
                 .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
     }
 
@@ -41,8 +43,28 @@ public class ChatRoomService {
                 .map(room -> {
                     ChatMessage lastMessage = chatMessageRepository.findTopByChatRoomOrderBySentAtDesc(room);
                     int unreadCount = chatMessageRepository.countByChatRoomAndReceiverAndIsReadFalse(room, user);
-                    return ChatRoomResponse.from(room, user, lastMessage, unreadCount);
+
+                    // Lazy 방지용 partner nickname 추출
+                    User partner = room.getPartner(user);
+                    String partnerNickname = partner.getNickname();
+
+                    return ChatRoomResponse.from(room, partnerNickname, lastMessage, unreadCount);
                 })
                 .collect(Collectors.toList());
     }
+
+    public ChatRoomResponse getChatRoomSummary(ChatRoom room, User me) {
+        User partner = room.getPartner(me);
+        System.out.println("[디버깅] partner 클래스: " + partner.getClass()); // <- 실제 클래스 Proxy 확인
+        System.out.println("[디버깅] isInitialized: " + Hibernate.isInitialized(partner));
+
+        // ✅ 여기서 프록시 초기화
+        String partnerNickname = partner.getNickname();
+
+        ChatMessage lastMessage = chatMessageRepository.findTopByChatRoomOrderBySentAtDesc(room);
+        int unreadCount = chatMessageRepository.countByChatRoomAndReceiverAndIsReadFalse(room, me);
+
+        return ChatRoomResponse.from(room, partnerNickname, lastMessage, unreadCount);
+    }
+
 }

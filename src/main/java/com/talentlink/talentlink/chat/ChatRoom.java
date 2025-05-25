@@ -35,6 +35,10 @@ public class ChatRoom {
     }
 
     public User getPartner(User me) {
-        return userA.equals(me) ? userB : userA;
+        if (userA.getId().equals(me.getId())) {
+            return userB;
+        }
+        return userA;
     }
+
 }

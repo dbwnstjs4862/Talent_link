@@ -27,6 +27,6 @@ public class CustomLoginSuccessHandler extends SavedRequestAwareAuthenticationSu
         request.getSession().setAttribute("user", user);
 
         // 기본 동작 (원래 가려고 했던 페이지로 이동)
-        super.onAuthenticationSuccess(request, response, authentication);
+        response.sendRedirect("/");
     }
 }

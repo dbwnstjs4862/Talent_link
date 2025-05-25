@@ -2,6 +2,10 @@ package com.talentlink.talentlink.chat;
 
 import com.talentlink.talentlink.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,4 +21,13 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     int countByChatRoomAndReceiverAndIsReadFalse(ChatRoom chatRoom, User receiver);
 
     List<ChatMessage> findByChatRoomAndReceiverAndIsReadFalse(ChatRoom chatRoom, User receiver);
+
+    @Transactional
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ChatMessage m SET m.isRead = true WHERE m.chatRoom = :room AND m.receiver = :receiver AND m.isRead = false")
+    int markAllAsRead(@Param("room") ChatRoom room, @Param("receiver") User receiver);
+
+    @Query("SELECT m.id FROM ChatMessage m WHERE m.chatRoom.id = :roomId AND m.sender.id = :senderId AND m.isRead = true")
+    List<Long> findReadMessageIdsByRoomAndSender(@Param("roomId") Long roomId, @Param("senderId") Long senderId);
+
 }

@@ -2,10 +2,7 @@ package com.talentlink.talentlink.chat;
 
 import com.talentlink.talentlink.chat.dto.ChatMessageDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -24,5 +21,15 @@ public class ChatRestController {
                 .map(ChatMessageDto::from)
                 .toList();
     }
+
+    // ✅ 내가 보낸 메시지 중 읽힌 것만 반환
+    @GetMapping("/read-messages/{roomId}")
+    public List<Long> getReadMessages(
+            @PathVariable Long roomId,
+            @RequestParam Long userId
+    ) {
+        return chatMessageService.findReadMessagesSentByUserInRoom(roomId, userId);
+    }
 }
+
 
