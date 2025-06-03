@@ -95,74 +95,72 @@
   document.addEventListener("DOMContentLoaded", function () {
 
     const userId = [[${currentUserId}]];
-    console.log("✅ userId:", userId);  // ← ✅ 이 라인 추가
+    console.log("✅ userId from Thymeleaf:", userId);
+    console.log("✅ userId:", userId);
 
     let stompClient;
 
+    function updateChatListUI(summary) {
+      const roomId = summary.roomId;
+
+      const msgEl = document.getElementById('last-msg-' + roomId);
+      const timeEl = document.getElementById('last-time-' + roomId);
+      const unreadEl = document.getElementById('unread-' + roomId);
+
+      if (msgEl) msgEl.textContent = summary.lastMessage || '';
+      if (timeEl && summary.lastMessageTime) {
+        const time = new Date(summary.lastMessageTime).toLocaleString();
+        timeEl.textContent = time;
+      }
+
+      if (unreadEl) {
+        if (summary.unreadCount > 0) {
+          unreadEl.textContent = summary.unreadCount;
+          unreadEl.style.display = "inline-block";
+        } else {
+          unreadEl.style.display = "none";
+        }
+      } else if (summary.unreadCount > 0) {
+        const newBadge = document.createElement("span");
+        newBadge.id = "unread-" + roomId;
+        newBadge.className = "badge";
+        newBadge.textContent = summary.unreadCount;
+
+        const roomEl = document.querySelector(`.room[data-room-id='${roomId}'] a`);
+        if (roomEl) {
+          roomEl.appendChild(newBadge);
+        }
+      }
+    }
+
     function connectWebSocket() {
-      const socket = new SockJS('/ws-chat');
+      const socket = new SockJS('http://localhost:8085/ws-chat'); // ✅ 여기 고정!!
       stompClient = Stomp.over(socket);
 
       stompClient.connect({}, function () {
-        console.log("✅ stompClient connected!");  // ✅ 여기에 넣기
+        console.log("✅ stompClient connected!");
         console.log("🧠 Subscribing to:", `/sub/chat/refresh/${userId}`);
 
         stompClient.subscribe(`/sub/chat/refresh/${userId}`, function (msg) {
           const data = JSON.parse(msg.body);
+          const payload = data.payload || data;
 
-          // ✅ 1단계: 수신 원본
+          const roomId = String(payload.roomId);
+          console.log("🧩 수신된 갱신 메시지:", payload, typeof roomId);
 
-          console.log("[WS 수신 원본]:", msg.body);
-          // ✅ 2단계: 파싱 후 객체 상태 확인
-
-          console.log("[파싱 결과]:", data);
-          // ✅ 3단계: 실제 DOM 접근 테스트
-
-          console.log("[타겟 DOM 존재 여부]:", document.getElementById("last-msg-" + data.roomId));
-
-          const roomId = data.roomId;
-
-          const msgEl = document.getElementById('last-msg-' + roomId);
-          const timeEl = document.getElementById('last-time-' + roomId);
-          const unreadEl = document.getElementById('unread-' + roomId);
-
-          if (msgEl) msgEl.textContent = data.lastMessage || '';
-          if (timeEl && data.lastMessageTime) {
-            const time = new Date(data.lastMessageTime).toLocaleString();
-            timeEl.textContent = time;
-          }
-
-          if (!unreadEl) {
-            if (data.unreadCount > 0) {
-              const newBadge = document.createElement("span");
-              newBadge.id = "unread-" + roomId;
-              newBadge.className = "badge";
-              newBadge.textContent = data.unreadCount;
-
-              // 💡 .room > a 요소 내부에 badge 삽입
-              const roomEl = document.querySelector(`.room[data-room-id='${roomId}'] a`);
-              if (roomEl) {
-                roomEl.appendChild(newBadge);
-              }
-            }
-          } else {
-            if (data.unreadCount > 0) {
-              unreadEl.textContent = data.unreadCount;
-              unreadEl.style.display = "inline-block";
-            } else {
-              unreadEl.style.display = "none";
-            }
-          }
-
-          console.log(`[WS][갱신] roomId=${roomId} → ${data.lastMessage}`);
+          setTimeout(() => updateChatListUI(payload), 300);
+          console.log(`[✅WS][갱신] roomId=${payload.roomId} → ${payload.lastMessage}`);
         });
+      }, function (err) {
+        console.error("❌ stomp 연결 실패", err);
       });
     }
+
+
 
     connectWebSocket();
   });
 </script>
-
 
 </body>
 </html>

@@ -1,50 +1,50 @@
 package com.talentlink.talentlink.talentrequest;
 
-import com.talentlink.talentlink.security.CustomUserDetails;
-import com.talentlink.talentlink.talentrequest.dto.TalentRequestRequest;
+import com.talentlink.talentlink.user.User;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/talentrequests")
 public class TalentRequestViewController {
 
-    private final TalentRequestService requestService;
+    private final TalentRequestService talentRequestService;
 
-    @GetMapping("/talentrequests")
-    public String showAllRequests(Model model) {
-        model.addAttribute("requests", requestService.findAll());
+    @GetMapping
+    public String showList(Model model) {
+        model.addAttribute("requests", talentRequestService.findAll());
         return "talentrequest/list";
     }
 
-    @GetMapping("/talentrequests/register")
+    @GetMapping("/register")
     public String showRegisterForm() {
         return "talentrequest/register";
     }
 
-    @PostMapping("/talentrequests")
-    public String registerRequest(@ModelAttribute TalentRequestRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        requestService.register(request, userDetails.getUser());
+    @PostMapping
+    public String register(
+            @RequestParam String title,
+            @RequestParam String description,
+            @RequestParam int budget,
+            @RequestParam("deadline") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime deadline,
+            HttpSession session
+    ) {
+        User loginUser = (User) session.getAttribute("loginUser");
+        talentRequestService.register(title, description, budget, deadline, loginUser);
         return "redirect:/talentrequests";
     }
 
-    @GetMapping("/talentrequests/{id}")
-    public String showRequestDetail(@PathVariable Long id, Model model) {
-        model.addAttribute("request", requestService.findById(id));
+
+    @GetMapping("/{id}")
+    public String showDetail(@PathVariable Long id, Model model) {
+        model.addAttribute("request", talentRequestService.findById(id));
         return "talentrequest/detail";
     }
-
-    // ✅ 마이페이지 - 내가 요청한 글
-    @GetMapping("/mypage/talentrequests")
-    public String showMyRequests(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
-        model.addAttribute("requests", requestService.findMyRequests(userDetails.getUser()));
-        return "talentrequest/mypage-list";
-    }
 }
-

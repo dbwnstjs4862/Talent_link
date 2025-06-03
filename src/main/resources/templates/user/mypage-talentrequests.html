@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>내가 요청한 재능 - TalentLink</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+    }
+    main {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .card-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .card h3 {
+      margin: 0;
+    }
+    .card p {
+      margin: 0.5rem 0;
+    }
+    .card a {
+      display: inline-block;
+      margin-top: 0.5rem;
+      color: #0077cc;
+      text-decoration: none;
+    }
+    .card a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<div th:replace="common/header :: header"></div>
+<main>
+  <h2>📨 내가 요청한 재능</h2>
+  <div class="card-list">
+    <div class="card" th:each="request : ${requests}">
+      <h3 th:text="${request.title}">제목</h3>
+      <p th:text="'예산: ' + ${request.budget} + '원'">50000원</p>
+      <p th:text="'마감일: ' + ${#temporals.format(request.deadline, 'yyyy-MM-dd')}">마감일</p>
+      <p th:text="'작성일: ' + ${#temporals.format(request.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</p>
+      <a th:href="@{'/talentrequests/' + ${request.id}}">요청 상세 보기 →</a>
+    </div>
+  </div>
+</main>
+<div th:replace="common/footer :: footer"></div>
+</body>
+</html>

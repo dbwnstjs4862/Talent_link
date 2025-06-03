@@ -3,31 +3,29 @@ package com.talentlink.talentlink.chat;
 import com.talentlink.talentlink.chat.dto.ChatRoomResponse;
 import com.talentlink.talentlink.user.User;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository chatMessageRepository;
 
     public ChatRoom createRoom(User userA, User userB) {
-        return chatRoomRepository.save(new ChatRoom(userA, userB));
+        ChatRoom room = new ChatRoom();
+        room.setUserA(userA);
+        room.setUserB(userB);
+        return chatRoomRepository.save(room);
     }
 
-    // ChatRoomService.java
     public ChatRoom findById(Long id) {
-        return chatRoomRepository.findWithUsersById(id) // ✅ 여기!!
-                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
-    }
-
-    public List<ChatRoom> findAllByUser(User user) {
-        return chatRoomRepository.findByUserAOrUserB(user, user);
+        return chatRoomRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다. ID=" + id));
     }
 
     public ChatRoom findBetweenUsers(User userA, User userB) {
@@ -35,36 +33,34 @@ public class ChatRoomService {
                 .orElse(null);
     }
 
-    // ✅ 채팅방 리스트 + 마지막 메시지 + 안읽은 수 포함된 DTO 반환
-    public List<ChatRoomResponse> getChatRoomsWithDetails(User user) {
-        List<ChatRoom> rooms = findAllByUser(user);
-
-        return rooms.stream()
-                .map(room -> {
-                    ChatMessage lastMessage = chatMessageRepository.findTopByChatRoomOrderBySentAtDesc(room);
-                    int unreadCount = chatMessageRepository.countByChatRoomAndReceiverAndIsReadFalse(room, user);
-
-                    // Lazy 방지용 partner nickname 추출
-                    User partner = room.getPartner(user);
-                    String partnerNickname = partner.getNickname();
-
-                    return ChatRoomResponse.from(room, partnerNickname, lastMessage, unreadCount);
-                })
-                .collect(Collectors.toList());
+    public List<ChatRoom> findRoomsByUser(User user) {
+        return chatRoomRepository.findByUserAOrUserB(user, user);
     }
 
-    public ChatRoomResponse getChatRoomSummary(ChatRoom room, User me) {
-        User partner = room.getPartner(me);
-        System.out.println("[디버깅] partner 클래스: " + partner.getClass()); // <- 실제 클래스 Proxy 확인
-        System.out.println("[디버깅] isInitialized: " + Hibernate.isInitialized(partner));
+    @Transactional(readOnly = true)
+    public List<ChatRoom> getChatRoomsWithDetails(User user) {
+        List<ChatRoom> rooms = findRoomsByUser(user);
 
-        // ✅ 여기서 프록시 초기화
-        String partnerNickname = partner.getNickname();
+        for (ChatRoom room : rooms) {
+            // Lazy 로딩 방지용 partner 가져오기
+            room.getPartner(user).getNickname();
+            chatMessageRepository.findTopByChatRoomOrderBySentAtDesc(room);
+            chatMessageRepository.countByChatRoomAndReceiverAndIsReadFalse(room, user);
+        }
 
-        ChatMessage lastMessage = chatMessageRepository.findTopByChatRoomOrderBySentAtDesc(room);
-        int unreadCount = chatMessageRepository.countByChatRoomAndReceiverAndIsReadFalse(room, me);
+        return rooms;
+    }
 
-        return ChatRoomResponse.from(room, partnerNickname, lastMessage, unreadCount);
+    public List<ChatRoomResponse> getChatRoomResponsesWithDetails(User user) {
+        List<ChatRoom> rooms = findRoomsByUser(user);
+
+        return rooms.stream().map(room -> {
+            User partner = room.getPartner(user);
+            ChatMessage lastMessage = chatMessageRepository.findTopByChatRoomOrderBySentAtDesc(room);
+            int unreadCount = chatMessageRepository.countByChatRoomAndReceiverAndIsReadFalse(room, user);
+
+            return ChatRoomResponse.from(room, partner.getNickname(), lastMessage, unreadCount);
+        }).toList();
     }
 
 }

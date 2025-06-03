@@ -63,9 +63,9 @@
 
     <div class="meta">
         👤
-        <a th:href="@{'/users/' + ${talent.userId}}"
+        <a th:href="@{'/users/' + ${talent.user.id}}" class="nickname"
            style="text-decoration: none; color: inherit;"
-           th:text="${talent.nickname}">작성자</a>
+           th:text="${talent.user.nickname}">작성자</a>
         |
         🗓️ <span th:text="${#temporals.format(talent.createdAt, 'yyyy-MM-dd HH:mm')}">작성일</span>
     </div>

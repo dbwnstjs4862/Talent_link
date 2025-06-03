@@ -18,9 +18,7 @@ public class Talent extends BaseEntity {
     private Long id;
 
     private String title;
-
     private String description;
-
     private int price;
 
     @ManyToOne(fetch = FetchType.LAZY)

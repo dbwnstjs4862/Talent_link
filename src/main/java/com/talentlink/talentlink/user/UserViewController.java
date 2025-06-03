@@ -1,11 +1,11 @@
 package com.talentlink.talentlink.user;
 
-import com.talentlink.talentlink.user.dto.UserRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -16,19 +16,24 @@ public class UserViewController {
     // ✅ 회원가입 폼
     @GetMapping("/register")
     public String showRegisterForm() {
-        return "user/register-form";  // templates/user/register-form.html
+        return "user/register-form";
     }
 
     // ✅ 회원가입 처리 + 자동 로그인
     @PostMapping("/register")
-    public String processRegister(UserRequest request, HttpServletRequest httpRequest) {
-        userService.register(request, httpRequest);  // ✅ 세션 저장을 위해 request 함께 전달
-        return "redirect:/"; // 자동 로그인 후 홈으로 이동
+    public String processRegister(
+            @RequestParam String username,
+            @RequestParam String password,
+            @RequestParam String nickname,
+            HttpServletRequest httpRequest
+    ) {
+        userService.register(username, password, nickname, httpRequest);
+        return "redirect:/";
     }
 
     // ✅ 로그인 폼
     @GetMapping("/login")
     public String showLoginForm() {
-        return "user/login-form";  // templates/user/login-form.html
+        return "user/login-form";
     }
 }

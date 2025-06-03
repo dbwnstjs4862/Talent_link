@@ -42,7 +42,7 @@
     const pendingReadIds = new Set();
 
     function loadPreviousMessages() {
-        fetch(`/api/chat/messages/${roomId}`)
+        fetch("http://localhost:8085/api/chat/messages/" + roomId + "?userId=" + senderId)
             .then(response => response.json())
             .then(messages => {
                 const messageBox = document.getElementById("messages");
@@ -68,20 +68,11 @@
                 });
 
                 messageBox.scrollTop = messageBox.scrollHeight;
-
-                // ✅ 메시지 불러온 후, 읽힌 메시지 ID 조회해서 UI 반영
-                fetch(`/api/chat/read-messages/${roomId}?userId=${senderId}`)
-                    .then(res => res.json())
-                    .then(readIds => {
-                        console.log("🧾 서버에서 읽은 메시지 ID 목록 수신:", readIds);
-                        markMessagesAsReadUI(readIds);
-                    });
             });
     }
 
-
     function connect() {
-        const socket = new SockJS('/ws-chat');
+        const socket = new SockJS("http://localhost:8085/ws-chat");
         stompClient = Stomp.over(socket);
 
         stompClient.connect({}, function () {
@@ -89,9 +80,13 @@
                 const msg = JSON.parse(message.body);
                 console.log("📩 WebSocket 수신 메시지:", msg);
 
-                // 🧠 상대방 메시지면 읽음 신호 바로 보냄
                 if (msg.senderId !== senderId) {
                     sendReadSignal();
+                    fetch(`http://localhost:8085/api/chat/room-summary/${roomId}?userId=${senderId}`)
+                        .then(res => res.json())
+                        .then(summary => {
+                            updateChatListUI(summary);
+                        });
                 }
 
                 if (msg.senderId === senderId && msg.read) {
@@ -207,11 +202,31 @@
         tryMark();
     }
 
+    function updateChatListUI(summary) {
+        const chatItem = document.querySelector(`[data-room-id='${summary.roomId}']`);
+        if (!chatItem) return;
+
+        const lastMsg = chatItem.querySelector(".last-message");
+        const lastTime = chatItem.querySelector(".meta"); // 또는 .last-time
+        const unreadBadge = chatItem.querySelector(".badge"); // ✅ class="badge"
+
+        if (lastMsg) lastMsg.textContent = summary.lastMessage;
+        if (lastTime) lastTime.textContent = new Date(summary.lastMessageTime).toLocaleString();
+
+        if (unreadBadge) {
+            if (summary.unreadCount > 0) {
+                unreadBadge.textContent = summary.unreadCount;
+                unreadBadge.style.display = "inline-block";
+            } else {
+                unreadBadge.style.display = "none";
+            }
+        }
+    }
+
 
     loadPreviousMessages();
     connect();
 </script>
-
 
 </body>
 </html>

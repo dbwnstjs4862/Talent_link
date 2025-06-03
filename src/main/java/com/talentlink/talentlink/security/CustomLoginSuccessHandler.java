@@ -23,10 +23,10 @@ public class CustomLoginSuccessHandler extends SavedRequestAwareAuthenticationSu
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         User user = userDetails.getUser();
 
-        // 세션에 user 저장
-        request.getSession().setAttribute("user", user);
+        // ✅ 세션에 loginUser로 저장 (프로젝트 전반 기준에 맞춤)
+        request.getSession().setAttribute("loginUser", user);
 
-        // 기본 동작 (원래 가려고 했던 페이지로 이동)
+        // 원래 가려고 했던 페이지로 이동
         response.sendRedirect("/");
     }
 }

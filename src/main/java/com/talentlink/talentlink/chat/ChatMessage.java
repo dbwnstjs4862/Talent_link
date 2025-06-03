@@ -3,22 +3,24 @@ package com.talentlink.talentlink.chat;
 import com.talentlink.talentlink.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@Setter
 public class ChatMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_id")
-    private ChatRoom chatRoom;
+    private String content;
+
+    private boolean isRead;
+
+    private LocalDateTime sentAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id")
@@ -28,23 +30,9 @@ public class ChatMessage {
     @JoinColumn(name = "receiver_id")
     private User receiver;
 
-    @Column(nullable = false)
-    private boolean isRead = false;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_room_id")
+    private ChatRoom chatRoom;
 
-    public void markAsRead() {
-        this.isRead = true;
-    }
-
-    private String content;
-
-    private LocalDateTime sentAt;
-
-    public ChatMessage(ChatRoom chatRoom, User sender, User receiver, String content) {
-        this.chatRoom = chatRoom;
-        this.sender = sender;
-        this.receiver = receiver;
-        this.content = content;
-        this.sentAt = LocalDateTime.now();
-        this.isRead = false;
-    }
+    // getRoom() 메서드는 Lombok의 @Getter 때문에 자동 생성됨
 }

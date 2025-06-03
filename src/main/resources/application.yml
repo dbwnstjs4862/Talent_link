@@ -1,14 +1,14 @@
 server:
   port: 8081
 
-
 spring:
   config:
     import: optional:classpath:application-secret.yml
+
   datasource:
     url: jdbc:mysql://localhost:3306/Talent_link?serverTimezone=Asia/Seoul
     username: Talent_link
-    password:
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -22,3 +22,6 @@ spring:
   thymeleaf:
     cache: false  # 템플릿 리로드 쉽게 하려면 false
 
+custom:
+  api:
+    base-url: http://localhost:8085

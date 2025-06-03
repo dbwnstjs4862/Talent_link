@@ -1,7 +1,5 @@
 package com.talentlink.talentlink.talent;
 
-import com.talentlink.talentlink.talent.dto.TalentRequest;
-import com.talentlink.talentlink.talent.dto.TalentResponse;
 import com.talentlink.talentlink.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -9,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -18,52 +15,33 @@ public class TalentService {
 
     private final TalentRepository talentRepository;
 
-    // 재능 등록
-    public Long registerTalent(TalentRequest request, User user) {
+    public Long register(String title, String description, int price, User user) {
         Talent talent = new Talent();
-        talent.setTitle(request.getTitle());
-        talent.setDescription(request.getDescription());
-        talent.setPrice(request.getPrice());
+        talent.setTitle(title);
+        talent.setDescription(description);
+        talent.setPrice(price);
         talent.setUser(user);
-
         return talentRepository.save(talent).getId();
     }
 
-    // 내 재능 목록 조회
-    @Transactional(readOnly = true)
-    public List<TalentResponse> findMyTalents(User user) {
-        return talentRepository.findByUserOrderByCreatedAtDesc(user) // ✅ 최신순 정렬
-                .stream()
-                .map(TalentResponse::new)
-                .collect(Collectors.toList());
+    public List<Talent> findAll() {
+        return talentRepository.findAllWithUser();
     }
 
     @Transactional(readOnly = true)
-    public TalentResponse findById(Long id) {
-        Talent talent = talentRepository.findById(id)
+    public List<Talent> findByUser(User user) {
+        return talentRepository.findByUserOrderByCreatedAtDesc(user);
+    }
+
+    @Transactional(readOnly = true)
+    public Talent findById(Long id) {
+        return talentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 재능이 없습니다. ID=" + id));
-        return new TalentResponse(talent);
     }
 
     @Transactional(readOnly = true)
-    public List<TalentResponse> findAllTalents() {
-        return talentRepository.findAllByOrderByCreatedAtDesc() // ✅ 최신순 정렬 적용
-                .stream()
-                .map(TalentResponse::new)
-                .collect(Collectors.toList());
+    public List<Talent> findLatestTalents(int limit) {
+        return talentRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, limit));
     }
-
-    @Transactional(readOnly = true)
-    public List<TalentResponse> findLatestTalents(int limit) {
-        return talentRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, limit)).stream()
-                .map(TalentResponse::new)
-                .collect(Collectors.toList());
-    }
-
-//    public List<TalentResponse> findLatestTalents(int limit) {
-//        List<Talent> talents = talentRepository.findTopByOrderByCreatedAtDesc(PageRequest.of(0, limit));
-//        System.out.println("🔍 최신 재능 개수: " + talents.size()); // 👈 여기에 로그
-//        return talents.stream().map(TalentResponse::new).collect(Collectors.toList());
-//    }
 
 }
